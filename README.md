@@ -18,16 +18,14 @@ Download the [tool](todo) here.
 
 You can run the program by passing either the process name or PID, and the refresh interval (in seconds) as arguments.
 
-```
-bash
-PPR_64b [process name | PID] [refrash interval]
+``` bash
+PPR_64b <process name | PID> <refrash interval in seconds>
 ```
 
 ### Example:
 
 Command:
-```
-bash
+``` bash
 PPR_64b notepad.exe 0.3
 ```
 

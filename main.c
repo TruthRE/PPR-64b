@@ -99,7 +99,15 @@ DWORD GetMainThreadId(DWORD pid) {
 void PrintTimestamp() {
     time_t now;
     time(&now);
-    printf("Last updated: %s", ctime(&now));  // Prints the current time
+
+    char timeStr[26];  // Buffer to store the time string (ctime_s requires at least 26 bytes)
+    errno_t err = ctime_s(timeStr, sizeof(timeStr), &now);  // Use ctime_s for safer time handling
+
+    if (err == 0) {
+        printf("Last updated: %s", timeStr);  // Print the current time
+    } else {
+        printf("Failed to get the current time.\n");
+    }
 }
 
 // Structure to track previous register values and counts
@@ -140,17 +148,27 @@ void Print64bitRegisters(CONTEXT *context, RegisterTrack *previousRegisters, dou
 
 // Function to prompt the user for a "Y/N" response
 int PromptUser(const char *message) {
-    char response;
+    int response;  // Use int to handle the return value of getchar
     printf("%s (Y/N): ", message);
+    
     while (1) {
-        response = getchar();
+        response = getchar();  // Store getchar return value in an int
+
+        // Ignore newline and other control characters
+        if (response == '\n' || response == '\r') {
+            continue;
+        }
+
         if (response == 'Y' || response == 'y') {
-            return 1;
+            return 1;  // Return 1 for "Yes"
         } else if (response == 'N' || response == 'n') {
-            return 0;
+            return 0;  // Return 0 for "No"
         } else {
             printf("Invalid response. Please enter Y or N: ");
         }
+
+        // Clear the buffer after receiving input
+        while (getchar() != '\n') {}  // Discard any extra input (e.g., multiple characters)
     }
 }
 
@@ -200,7 +218,7 @@ int main(int argc, char *argv[]) {
 
     // Check if the process is 64-bit, and prompt the user if it's not
     if (!IsProcess64Bit(hProcess)) {
-        printf("Warning: The process with PID %lu is not 64-bit. The register values may be inaccurate or 'off'.\n", pid);
+        printf("Warning: The process with PID %lu is not 64-bit. The register values and labels may be inaccurate.\n", pid);
         if (!PromptUser("Do you want to proceed anyway?")) {
             printf("Exiting program.\n");
             CloseHandle(hProcess);
@@ -258,8 +276,11 @@ int main(int argc, char *argv[]) {
         // Resume the thread after getting the context
         ResumeThread(hThread);
 
-        // Sleep for the user-defined duration
-        Sleep(sleepSeconds * 1000);  // Convert seconds to milliseconds
+        // Convert seconds to milliseconds and cast to DWORD
+        DWORD sleepMillis = (DWORD)(sleepSeconds * 1000);
+
+        // Sleep for the specified duration
+        Sleep(sleepMillis);
     }
 
     // Close the handles
