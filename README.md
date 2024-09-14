@@ -12,7 +12,7 @@
 - Provides warning prompts for potentially resource-intensive or incorrect operations (e.g., continuous refresh or 32-bit process attachment).
 
 ## Release
-Download the [tool](todo) here.
+Download the [tool](https://github.com/TruthRE/PPR-64b/releases/tag/Version1.0) here.
 
 ## Usage
 
